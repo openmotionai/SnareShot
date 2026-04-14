@@ -2,7 +2,7 @@ import UIKit
 import SwiftUI
 
 public enum SnareShot {
-    public static let version = "0.1.0"
+    public static let version = "1.0.0"
 
     /// Entry point for the builder API.
     public static func verify<V: View>(_ view: V) -> SnapshotBuilder {

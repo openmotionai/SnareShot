@@ -3,6 +3,6 @@ import XCTest
 
 final class SnareShotTests: XCTestCase {
     func testVersion() {
-        XCTAssertEqual(SnareShot.version, "0.1.0")
+        XCTAssertEqual(SnareShot.version, "1.0.0")
     }
 }
