@@ -147,7 +147,13 @@ public struct SnapshotBuilder {
     }
 
     private func testMethodName(from function: String) -> String {
-        return function.replacingOccurrences(of: "()", with: "")
+        var name = function.replacingOccurrences(of: "()", with: "")
+        // Strip "test" prefix for cleaner snapshot filenames.
+        // "testLoginScreen" -> "LoginScreen"
+        if name.hasPrefix("test") {
+            name = String(name.dropFirst(4))
+        }
+        return name
     }
 
     private func snapshotsDirectory(from file: StaticString) -> URL {
