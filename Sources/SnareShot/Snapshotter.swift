@@ -17,8 +17,8 @@ public final class Snapshotter: SnapshotRendering {
         let viewController = makeViewController(from: target)
         let screenSize = effectiveScreenSize(device: device, orientation: variant.orientation)
 
-        // UIWindow must be attached to a UIWindowScene for drawHierarchy to work
-        // on iOS 13+. Grab the active scene from the test host app.
+        // UIWindow must be attached to a UIWindowScene for drawHierarchy to
+        // render content (iOS 13+). Grab the active scene from the test host app.
         let window: UIWindow
         if let scene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
@@ -50,20 +50,29 @@ public final class Snapshotter: SnapshotRendering {
         viewController.view.setNeedsLayout()
         viewController.view.layoutIfNeeded()
 
-        // Pump the run loop to let UIKit and SwiftUI settle.
-        // Multiple passes handle async layout, CALayer updates, and deferred blocks.
-        for _ in 0..<3 {
-            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
-            viewController.view.setNeedsLayout()
-            viewController.view.layoutIfNeeded()
-        }
+        // Flush all pending Core Animation transactions so layer contents
+        // (including lazily-loaded asset catalog images) are committed.
+        CATransaction.flush()
 
-        // Use layer.render(in:) instead of drawHierarchy -- it works reliably
-        // for off-screen windows and doesn't require the window to be
-        // physically visible on the device screen.
+        // Pump the run loop to let UIKit settle -- images, async layout,
+        // deferred display updates all need at least one pass through the
+        // display pipeline for drawHierarchy to capture them.
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+
+        // Force a second layout + flush cycle for views that respond to
+        // trait changes or content size updates after the initial pass.
+        viewController.view.setNeedsLayout()
+        viewController.view.layoutIfNeeded()
+        CATransaction.flush()
+
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+
+        // drawHierarchy renders the full UIKit pipeline including asset
+        // catalog images, blur effects, and system appearances. It requires
+        // the window to be attached to a UIWindowScene (done above).
         let renderer = UIGraphicsImageRenderer(size: screenSize)
-        let image = renderer.image { ctx in
-            viewController.view.layer.render(in: ctx.cgContext)
+        let image = renderer.image { _ in
+            window.drawHierarchy(in: CGRect(origin: .zero, size: screenSize), afterScreenUpdates: true)
         }
 
         window.isHidden = true
