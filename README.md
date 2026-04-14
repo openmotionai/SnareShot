@@ -60,6 +60,8 @@ dependencies: [
 
 Or in Xcode: **File > Add Package Dependencies** and paste `https://github.com/openmotionai/SnareShot`.
 
+> **Important:** Your test target must have a **Host Application** set to your app target. This ensures SnareShot can access your asset catalog (images, colors), custom fonts, and other app resources. In Xcode: select your test target > General > Host Application > choose your app.
+
 ## Quick Start
 
 ### 1. Write a test
