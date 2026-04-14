@@ -17,6 +17,8 @@ public enum GalleryReportGenerator {
         let variant: String
         let testClass: String
         let base64: String
+        /// Original filename for sorting (preserves numeric prefixes).
+        let sortKey: String
     }
 
     @discardableResult
@@ -51,10 +53,12 @@ public enum GalleryReportGenerator {
                 device: device,
                 variant: variant,
                 testClass: testClass,
-                base64: base64
+                base64: base64,
+                sortKey: filename
             ))
         }
-        return entries
+        // Sort by filename so numeric prefixes (01_, 02_) control gallery order
+        return entries.sorted { $0.sortKey.localizedStandardCompare($1.sortKey) == .orderedAscending }
     }
 
     // MARK: - Filename Parsing
@@ -98,7 +102,13 @@ public enum GalleryReportGenerator {
 
     private static func buildHTML(entries: [SnapshotEntry]) -> String {
         let count = entries.count
-        let devices = Set(entries.map { $0.device }).sorted().joined(separator: ", ")
+        // Use unique device names, keeping order from entries (not alphabetical)
+        var seenDevices: Set<String> = []
+        let devices = entries.compactMap { entry -> String? in
+            guard !entry.device.isEmpty, !seenDevices.contains(entry.device) else { return nil }
+            seenDevices.insert(entry.device)
+            return entry.device
+        }.joined(separator: ", ")
         let dateStr = ISO8601DateFormatter().string(from: Date())
 
         let cards = entries.map { cardHTML(for: $0) }.joined(separator: "\n")
