@@ -2,7 +2,7 @@ import UIKit
 import SwiftUI
 
 public enum SnareShot {
-    public static let version = "1.0.7"
+    public static let version = "1.0.8"
 
     /// Set to `true` in your test setUp() to record golden images programmatically.
     /// Alternative to the `SNARESHOT_RECORD=1` environment variable.

@@ -50,35 +50,50 @@ public final class Snapshotter: SnapshotRendering {
         viewController.view.setNeedsLayout()
         viewController.view.layoutIfNeeded()
 
-        // Flush all pending Core Animation transactions so layer contents
-        // (including lazily-loaded asset catalog images) are committed.
-        CATransaction.flush()
+        // Pump the run loop to let UIKit and SwiftUI settle.
+        for _ in 0..<3 {
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+            viewController.view.setNeedsLayout()
+            viewController.view.layoutIfNeeded()
+        }
 
-        // Pump the run loop to let UIKit settle -- images, async layout,
-        // deferred display updates all need at least one pass through the
-        // display pipeline for drawHierarchy to capture them.
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+        // UIImageView sets layer.contents lazily via the display pipeline.
+        // layer.render(in:) captures the layer tree directly, bypassing that
+        // pipeline, so images from asset catalogs appear blank. Fix: walk the
+        // view tree and explicitly commit every UIImageView's content to its
+        // layer before rendering.
+        Self.commitImageContent(in: viewController.view)
 
-        // Force a second layout + flush cycle for views that respond to
-        // trait changes or content size updates after the initial pass.
-        viewController.view.setNeedsLayout()
-        viewController.view.layoutIfNeeded()
-        CATransaction.flush()
-
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
-
-        // drawHierarchy renders the full UIKit pipeline including asset
-        // catalog images, blur effects, and system appearances. It requires
-        // the window to be attached to a UIWindowScene (done above).
         let renderer = UIGraphicsImageRenderer(size: screenSize)
-        let image = renderer.image { _ in
-            window.drawHierarchy(in: CGRect(origin: .zero, size: screenSize), afterScreenUpdates: true)
+        let image = renderer.image { ctx in
+            viewController.view.layer.render(in: ctx.cgContext)
         }
 
         window.isHidden = true
         window.rootViewController = nil
 
         return image
+    }
+
+    // MARK: - Image content commit
+
+    /// Recursively walks the view tree and explicitly sets layer.contents for
+    /// every UIImageView. UIKit normally does this lazily through the display
+    /// pipeline, but layer.render(in:) bypasses that pipeline, leaving image
+    /// layers empty. This forces the content to be present before capture.
+    private static func commitImageContent(in view: UIView) {
+        if let imageView = view as? UIImageView, let image = imageView.image {
+            // Force the image into the layer's backing store. Setting
+            // layer.contents directly with the CGImage makes it available
+            // for layer.render(in:) without waiting for the display pipeline.
+            if imageView.layer.contents == nil {
+                imageView.layer.contents = image.cgImage
+            }
+        }
+
+        for subview in view.subviews {
+            commitImageContent(in: subview)
+        }
     }
 
     // MARK: - Helpers
