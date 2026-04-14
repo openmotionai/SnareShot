@@ -10,7 +10,7 @@ public struct SnapshotConfig {
 
     public static let defaultConfig = SnapshotConfig(
         devices: [.iPhone15Pro],
-        variants: [.lightDark],
+        variants: [.light],
         tolerance: 0.0
     )
 }

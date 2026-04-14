@@ -2,7 +2,7 @@ import UIKit
 import SwiftUI
 
 public enum SnareShot {
-    public static let version = "1.0.4"
+    public static let version = "1.0.5"
 
     /// Set to `true` in your test setUp() to record golden images programmatically.
     /// Alternative to the `SNARESHOT_RECORD=1` environment variable.
@@ -38,7 +38,7 @@ public enum SnareShot {
 
 // MARK: - Free function API
 
-/// Snapshot a SwiftUI view with default config (iPhone 15 Pro, light + dark).
+/// Snapshot a SwiftUI view with default config (iPhone 15 Pro, light mode).
 public func assertSnapshot<V: View>(
     of view: V,
     file: StaticString = #filePath,

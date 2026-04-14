@@ -71,7 +71,7 @@ import SnareShot
 final class OnboardingTests: XCTestCase {
 
     func testWelcomeScreen() {
-        // Snapshots in light + dark mode on iPhone 15 Pro
+        // One screenshot: iPhone 15 Pro, light mode, portrait
         assertSnapshot(of: WelcomeView())
     }
 
@@ -128,7 +128,7 @@ assertSnapshot(of: myViewController)  // UIViewController
 assertSnapshot(of: myView)            // UIView
 ```
 
-Uses defaults: iPhone 15 Pro, light + dark mode, 0% tolerance.
+Uses defaults: iPhone 15 Pro, light mode, 0% tolerance. One screenshot per call.
 
 ### Builder (full control)
 
@@ -145,7 +145,7 @@ Chain any combination of:
 | Method | Description | Default |
 |---|---|---|
 | `.devices(...)` | Device screen sizes to render | `.iPhone15Pro` |
-| `.variants(...)` | Color scheme, Dynamic Type, orientation | `.lightDark` |
+| `.variants(...)` | Color scheme, Dynamic Type, orientation | `.light` |
 | `.tolerance(...)` | Per-pixel color tolerance (0.0 - 1.0) | `0.0` (exact) |
 
 ## Device Presets
