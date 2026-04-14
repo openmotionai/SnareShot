@@ -2,7 +2,11 @@ import UIKit
 import SwiftUI
 
 public enum SnareShot {
-    public static let version = "1.0.0"
+    public static let version = "1.0.1"
+
+    /// Set to `true` in your test setUp() to record golden images programmatically.
+    /// Alternative to the `SNARESHOT_RECORD=1` environment variable.
+    public static var isRecording = false
 
     /// Entry point for the builder API.
     public static func verify<V: View>(_ view: V) -> SnapshotBuilder {

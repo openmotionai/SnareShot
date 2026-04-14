@@ -137,7 +137,7 @@ public struct SnapshotBuilder {
     // MARK: - Helpers
 
     public static var isRecordMode: Bool {
-        ProcessInfo.processInfo.environment["SNARESHOT_RECORD"] == "1"
+        SnareShot.isRecording || ProcessInfo.processInfo.environment["SNARESHOT_RECORD"] == "1"
     }
 
     private func testClassName(from file: StaticString) -> String {
