@@ -26,8 +26,10 @@ public enum SnareShot {
         )
     }
 
-    // Observer registration (will be wired in Task 10)
-    static let _ensureObserver: Void = ()
+    // Observer registration (called lazily on first snapshot)
+    static let _ensureObserver: Void = {
+        SnareShotTestObserver.register()
+    }()
 }
 
 // MARK: - Free function API
