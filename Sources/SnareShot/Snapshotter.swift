@@ -17,8 +17,18 @@ public final class Snapshotter: SnapshotRendering {
         let viewController = makeViewController(from: target)
         let screenSize = effectiveScreenSize(device: device, orientation: variant.orientation)
 
-        // Set up window with the correct size and traits
-        let window = UIWindow(frame: CGRect(origin: .zero, size: screenSize))
+        // UIWindow must be attached to a UIWindowScene for drawHierarchy to work
+        // on iOS 13+. Grab the active scene from the test host app.
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first {
+            window = UIWindow(windowScene: scene)
+        } else {
+            window = UIWindow(frame: CGRect(origin: .zero, size: screenSize))
+        }
+
+        window.frame = CGRect(origin: .zero, size: screenSize)
         window.overrideUserInterfaceStyle = variant.colorScheme.userInterfaceStyle
 
         // Set the root VC and configure traits before triggering lifecycle
