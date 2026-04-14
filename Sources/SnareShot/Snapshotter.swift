@@ -58,9 +58,12 @@ public final class Snapshotter: SnapshotRendering {
             viewController.view.layoutIfNeeded()
         }
 
+        // Use layer.render(in:) instead of drawHierarchy -- it works reliably
+        // for off-screen windows and doesn't require the window to be
+        // physically visible on the device screen.
         let renderer = UIGraphicsImageRenderer(size: screenSize)
-        let image = renderer.image { _ in
-            window.drawHierarchy(in: CGRect(origin: .zero, size: screenSize), afterScreenUpdates: true)
+        let image = renderer.image { ctx in
+            viewController.view.layer.render(in: ctx.cgContext)
         }
 
         window.isHidden = true
