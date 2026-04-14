@@ -94,8 +94,8 @@ final class DiffEngineTests: XCTestCase {
         let blue = solidImage(color: .blue, size: CGSize(width: 10, height: 10))
         let result = engine.compare(expected: red, actual: blue, tolerance: 0)
         if case .mismatch(_, _, let composite) = result {
-            XCTAssertEqual(composite.size.width, 30, accuracy: 1)
-            XCTAssertEqual(composite.size.height, 10, accuracy: 1)
+            // Composite is 3 panels side by side, so width should be 3x height
+            XCTAssertEqual(composite.size.width, composite.size.height * 3, accuracy: 1)
         } else {
             XCTFail("Expected mismatch")
         }

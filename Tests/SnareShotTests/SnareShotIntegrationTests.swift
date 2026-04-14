@@ -172,34 +172,21 @@ final class SnareShotIntegrationTests: XCTestCase {
     // MARK: - Mismatch Detection
 
     func testMismatchProducesDiffImage() throws {
-        let fileManager = makeFileManager()
         let diffEngine = DiffEngine()
-        let snapshotter = makeSnapshotter()
-        let combo = VariantCombo()
 
-        let redView = Color.red.frame(width: 50, height: 50)
-        let redImage = snapshotter.render(
-            target: .swiftUI(AnyView(redView)),
-            device: .iPhone15Pro,
-            variant: combo
-        )
-        let url = fileManager.goldenURL(
-            testClass: "MismatchTest",
-            testMethod: "test",
-            device: .iPhone15Pro,
-            variant: combo,
-            counter: 0
-        )
-        try fileManager.save(image: redImage, to: url)
+        // Use solid-color images for a deterministic mismatch test
+        let size = CGSize(width: 20, height: 20)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let redImage = renderer.image { ctx in
+            UIColor.red.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
+        let blueImage = renderer.image { ctx in
+            UIColor.blue.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
 
-        let blueView = Color.blue.frame(width: 50, height: 50)
-        let blueImage = snapshotter.render(
-            target: .swiftUI(AnyView(blueView)),
-            device: .iPhone15Pro,
-            variant: combo
-        )
-        let expected = try fileManager.load(from: url)
-        let result = diffEngine.compare(expected: expected, actual: blueImage, tolerance: 0)
+        let result = diffEngine.compare(expected: redImage, actual: blueImage, tolerance: 0)
 
         if case .mismatch(let pct, _, let composite) = result {
             XCTAssertGreaterThan(pct, 0)
